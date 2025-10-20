@@ -13,6 +13,20 @@ import tempfile
 # --- คลาส YTDLSource (เหมือนเดิม) ---
 # (เรายังต้องใช้มันเพื่อดึงข้อมูลเพลง)
 
+import os
+
+# เช็กว่ามีไฟล์ cookies หรือไม่
+cookies_file = 'youtube_cookies.txt'
+has_cookies = os.path.exists(cookies_file)
+
+# ใช้ Invidious Proxy (หลบ YouTube bot detection)
+INVIDIOUS_INSTANCES = [
+    'https://invidious.privacydev.net',
+    'https://invidious.fdn.fr',
+    'https://inv.nadeko.net',
+    'https://invidious.nerdvpn.de',
+]
+
 ytdl_format_options = {
     'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -29,27 +43,43 @@ ytdl_format_options = {
     'cachedir': False,
     'prefer_ffmpeg': True,
     'keepvideo': False,
-    'socket_timeout': 30,
+    'socket_timeout': 15,
+    'retries': 3,
+    'fragment_retries': 3,
+    # ใช้ Invidious แทน YouTube โดยตรง
+    'geo_bypass': True,
+    'geo_bypass_country': 'US',
     # แก้ปัญหา YouTube bot detection
     'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'referer': 'https://www.youtube.com/',
+    'http_headers': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-us,en;q=0.5',
+        'Sec-Fetch-Mode': 'navigate',
+    },
     'extractor_args': {
         'youtube': {
-            'player_client': ['android', 'web'],
+            'player_client': ['android', 'web', 'ios'],
             'player_skip': ['webpage', 'configs'],
         }
     },
 }
 
+# เพิ่ม cookies ถ้ามีไฟล์
+if has_cookies:
+    ytdl_format_options['cookiefile'] = cookies_file
+    print(f"✅ Using cookies from {cookies_file}")
+
 ffmpeg_options = {
-    'options': '-vn -b:a 128k',  # จำกัด bitrate ลดการใช้ bandwidth
+    'options': '-vn -b:a 96k',  # ลด bitrate เพิ่มความเร็ว
     'before_options': (
         '-reconnect 1 '
         '-reconnect_streamed 1 '
         '-reconnect_delay_max 5 '
-        '-probesize 10M '  # เพิ่ม buffer size
-        '-analyzeduration 10M '  # เพิ่มเวลาวิเคราะห์
-        '-loglevel warning'  # ลด log
+        '-probesize 5M '  # ลดลงเพื่อความเร็ว
+        '-analyzeduration 5M '  # ลดลงเพื่อความเร็ว
+        '-loglevel error'  # แสดงแค่ error
     )
 }
 

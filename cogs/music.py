@@ -14,7 +14,7 @@ import tempfile
 # (เรายังต้องใช้มันเพื่อดึงข้อมูลเพลง)
 
 ytdl_format_options = {
-    'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio/best',  # เลือกฟอร์แมตที่เหมาะสม
+    'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': False,
@@ -26,10 +26,19 @@ ytdl_format_options = {
     'default_search': 'auto',
     'source_address': '0.0.0.0',
     'extract_flat': 'in_playlist',
-    'cachedir': False,  # ปิด cache เพื่อลด I/O
-    'prefer_ffmpeg': True,  # ใช้ FFmpeg
-    'keepvideo': False,  # ไม่เก็บวิดีโอ
-    'socket_timeout': 30,  # เพิ่ม timeout
+    'cachedir': False,
+    'prefer_ffmpeg': True,
+    'keepvideo': False,
+    'socket_timeout': 30,
+    # แก้ปัญหา YouTube bot detection
+    'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'referer': 'https://www.youtube.com/',
+    'extractor_args': {
+        'youtube': {
+            'player_client': ['android', 'web'],
+            'player_skip': ['webpage', 'configs'],
+        }
+    },
 }
 
 ffmpeg_options = {
